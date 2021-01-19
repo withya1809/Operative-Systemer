@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "dat320/lab8/grpcfs/proto";
+
+service FileSystem {
+  // Looks up a file/directory at the requested path.
+  // For directories, is_dir is true, files lists each file/subdirectory in the
+  // directory at path, and size is the number of files/subdirectories within
+  // the directory.
+  // For files, size gives the size of the file in bytes.
+  rpc Lookup(LookupRequest) returns (LookupResponse) {}
+  // Creates a file at the requested path in the file system of the server.
+  // Should not overwrite existing files/directories.
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  // Opens a file for reading at the server, which then takes read requests from
+  // the client and responds with the contents.
+  rpc Reader(stream ReadRequest) returns (stream ReadResponse) {}
+  // Opens a file for writing at the server, which then takes write requests
+  // from the client and responds with the status of the operation.
+  rpc Writer(stream WriteRequest) returns (stream WriteStatus) {}
+  // Remove removes the file/directory at the requested path.
+  // Contents of directories are recursively removed.
+  rpc Remove(RemoveRequest) returns (RemoveResponse) {}
+  // Mkdir makes a directory at the requested path.
+  // Should not overwrite existing files/directories.
+  rpc Mkdir(MakeDirRequest) returns (MakeDirResponse) {}
+}
+
+message LookupRequest {
+  string path = 1;
+}
+
+message LookupResponse {
+  // indicate whether this is a file or a directory
+  bool is_dir = 1;
+  // files: size in bytes of the file at the path
+  // directories: number of files/subdirectories within the directory
+  int64 size = 2;
+  // is_dir=true -> filenames of all files/subdirectories
+  // is_dir=false -> zero value
+  repeated string files = 3;
+}
+
+message CreateRequest {
+  string path = 1;
+}
+
+message CreateResponse {}
+
+// TODO(student): add necessary fields to this message
+message ReadRequest {
+  string path = 1;
+  int64 offset = 2;
+  int64 NumBytes = 3;
+}
+
+// TODO(student): add necessary fields to this message
+message ReadResponse {
+  bytes readContent = 1;
+  bool eof = 2;
+  int64 bytesRead = 3;
+}
+
+// TODO(student): add necessary fields to this message
+message WriteRequest {
+  string path = 1;
+  int64 offset = 2;
+  bytes content = 3;
+
+}
+
+// TODO(student): add necessary fields to this message
+message WriteStatus {
+  int64 numBytes = 1; 
+  bool eof = 2;
+}
+
+message RemoveRequest {
+  // absolute path of a file or directory
+  string path = 1;
+}
+
+message RemoveResponse {}
+
+message MakeDirRequest {
+  string path = 1;
+  //os.FileMode in Go
+  uint32 file_mode = 2;
+}
+
+message MakeDirResponse {}

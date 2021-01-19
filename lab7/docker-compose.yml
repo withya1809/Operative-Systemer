@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+
+  logger:
+    build: 
+      dockerfile: Dockerfile
+      context: ./logger
+
+    networks: 
+      skynet_backend:
+        ipv4_address: "192.168.10.20"
+
+
+  server:
+    depends_on:
+      - logger
+
+    build: 
+      dockerfile: Dockerfile
+      context: ./server
+
+    networks:
+      skynet_frontend:
+        ipv4_address: "192.168.1.10"
+      
+      skynet_backend:
+
+    command: ["-logaddr=192.168.10.20:61112"] #server contacts logger at given addr
+
+  
+  client:
+    depends_on:
+      - server
+
+    build: 
+      dockerfile: Dockerfile
+      context: ./client
+
+    networks:
+      skynet_frontend:
+
+    command: ["-raddr=192.168.1.10:61111","-delay=1000"] #client contacts server at given addr
+      
+
+networks:
+
+  skynet_frontend: 
+    ipam:
+      config: 
+        - subnet: "192.168.1.0/24"
+
+  skynet_backend:
+    ipam:
+      config: 
+        - subnet: "192.168.10.0/24"
